@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Glyph Forge</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230f766e'/%3E%3Cpath fill='%23fbfcf8' d='M12 12h14v14H12zM38 12h14v14H38zM25 25h14v14H25zM12 38h14v14H12zM38 38h14v14H38z'/%3E%3Cpath fill='%23cf4e45' d='M26 12h12v12H26zM14 26h10v10H14zM40 26h10v10H40zM26 40h12v12H26z'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Pattern Workbench</p>
+          <h1>Glyph Forge</h1>
+        </div>
+        <div class="top-actions" aria-label="Project actions">
+          <button class="button quiet" id="undoButton" type="button">Undo</button>
+          <button class="button quiet" id="redoButton" type="button">Redo</button>
+          <button class="button" id="exportButton" type="button">Export PNG</button>
+        </div>
+      </header>
+
+      <main class="workbench">
+        <aside class="toolrail" aria-label="Tools">
+          <section class="panel flush">
+            <h2>Tool</h2>
+            <div class="segmented vertical" id="toolButtons">
+              <button class="segment active" type="button" data-tool="paint">Paint</button>
+              <button class="segment" type="button" data-tool="erase">Erase</button>
+              <button class="segment" type="button" data-tool="fill">Fill</button>
+              <button class="segment" type="button" data-tool="pick">Pick</button>
+            </div>
+          </section>
+
+          <section class="panel flush">
+            <h2>Brush</h2>
+            <div class="segmented" id="brushButtons">
+              <button class="segment active" type="button" data-brush="1">1</button>
+              <button class="segment" type="button" data-brush="2">2</button>
+              <button class="segment" type="button" data-brush="3">3</button>
+              <button class="segment" type="button" data-brush="4">4</button>
+            </div>
+          </section>
+
+          <section class="panel flush">
+            <h2>Symmetry</h2>
+            <div class="segmented vertical" id="symmetryButtons">
+              <button class="segment active" type="button" data-symmetry="none">None</button>
+              <button class="segment" type="button" data-symmetry="vertical">Vertical</button>
+              <button class="segment" type="button" data-symmetry="horizontal">Horizontal</button>
+              <button class="segment" type="button" data-symmetry="quadrant">Quadrant</button>
+              <button class="segment" type="button" data-symmetry="rotate">Rotate</button>
+            </div>
+          </section>
+        </aside>
+
+        <section class="stage" aria-label="Pattern canvas">
+          <div class="canvas-frame">
+            <canvas id="boardCanvas" width="720" height="720" aria-label="Editable pattern grid"></canvas>
+          </div>
+          <div class="statusbar">
+            <span id="statusText">24 x 24 tile</span>
+            <span id="colorText">Color #cf4e45</span>
+          </div>
+        </section>
+
+        <aside class="inspector" aria-label="Pattern settings">
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Preview</h2>
+              <button class="button quiet small" id="randomButton" type="button">Shuffle</button>
+            </div>
+            <canvas id="previewCanvas" class="preview" width="320" height="320" aria-label="Repeating tile preview"></canvas>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Palette</h2>
+              <button class="button quiet small" id="paletteButton" type="button">New Set</button>
+            </div>
+            <div class="swatches" id="swatches" aria-label="Color palette"></div>
+          </section>
+
+          <section class="panel">
+            <h2>Grid</h2>
+            <div class="segmented" id="gridButtons">
+              <button class="segment" type="button" data-size="12">12</button>
+              <button class="segment" type="button" data-size="16">16</button>
+              <button class="segment active" type="button" data-size="24">24</button>
+              <button class="segment" type="button" data-size="32">32</button>
+            </div>
+          </section>
+
+          <section class="panel command-panel">
+            <button class="button" id="clearButton" type="button">Clear Tile</button>
+            <button class="button quiet" id="invertButton" type="button">Invert Marks</button>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
