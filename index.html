@@ -17,6 +17,7 @@
         <div class="top-actions" aria-label="Project actions">
           <button class="button quiet" id="undoButton" type="button">Undo</button>
           <button class="button quiet" id="redoButton" type="button">Redo</button>
+          <button class="button quiet" id="showcaseButton" type="button">Showcase</button>
           <button class="button" id="exportButton" type="button">Export PNG</button>
         </div>
       </header>
@@ -133,6 +134,15 @@
             </div>
           </section>
 
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Gallery</h2>
+              <button class="button quiet small" id="saveGalleryButton" type="button">Save</button>
+            </div>
+            <div class="gallery-count" id="galleryCount">No saved tiles</div>
+            <div class="gallery-list" id="galleryList" aria-label="Saved tiles"></div>
+          </section>
+
           <section class="panel command-panel">
             <button class="button" id="clearButton" type="button">Clear Tile</button>
             <button class="button quiet" id="invertButton" type="button">Invert Marks</button>
@@ -140,6 +150,17 @@
         </aside>
       </main>
     </div>
+
+    <section class="showcase" id="showcase" aria-hidden="true" aria-label="Pattern showcase">
+      <canvas id="showcaseCanvas" width="1600" height="900"></canvas>
+      <div class="showcase-bar">
+        <div>
+          <p class="eyebrow">Showcase</p>
+          <h2 id="showcaseTitle">Glyph Forge</h2>
+        </div>
+        <button class="button" id="closeShowcaseButton" type="button">Close</button>
+      </div>
+    </section>
 
     <script src="app.js"></script>
   </body>

@@ -18,6 +18,7 @@ const redoButton = document.querySelector("#redoButton");
 const exportButton = document.querySelector("#exportButton");
 const randomButton = document.querySelector("#randomButton");
 const paletteButton = document.querySelector("#paletteButton");
+const showcaseButton = document.querySelector("#showcaseButton");
 const clearButton = document.querySelector("#clearButton");
 const invertButton = document.querySelector("#invertButton");
 const exportText = document.querySelector("#exportText");
@@ -28,8 +29,17 @@ const copyButton = document.querySelector("#copyButton");
 const loadButton = document.querySelector("#loadButton");
 const designCode = document.querySelector("#designCode");
 const toast = document.querySelector("#toast");
+const saveGalleryButton = document.querySelector("#saveGalleryButton");
+const galleryCount = document.querySelector("#galleryCount");
+const galleryList = document.querySelector("#galleryList");
+const showcase = document.querySelector("#showcase");
+const showcaseCanvas = document.querySelector("#showcaseCanvas");
+const showcaseContext = showcaseCanvas.getContext("2d");
+const showcaseTitle = document.querySelector("#showcaseTitle");
+const closeShowcaseButton = document.querySelector("#closeShowcaseButton");
 
 const storageKey = "glyph-forge-state";
+const galleryStorageKey = "glyph-forge-gallery";
 const defaultSize = 24;
 const modes = ["crest", "woven", "circuit", "bloom", "scatter"];
 const exportModes = ["tile", "sheet", "wallpaper"];
@@ -53,6 +63,8 @@ let historyIndex = -1;
 let isDrawing = false;
 let activePointerId = null;
 let editChanged = false;
+let gallery = [];
+let showcaseTile = null;
 
 function makeBlankCells(size) {
   return Array(size * size).fill(null);
@@ -100,8 +112,43 @@ function loadState() {
   }
 }
 
+function normalizeGalleryItem(item) {
+  if (!item || typeof item !== "object" || typeof item.code !== "string") {
+    return null;
+  }
+
+  try {
+    decodeDesign(item.code);
+  } catch {
+    return null;
+  }
+
+  return {
+    id: typeof item.id === "string" ? item.id : String(Date.now()),
+    name: typeof item.name === "string" && item.name.trim() ? item.name.trim() : "Saved tile",
+    code: item.code,
+    mode: modes.includes(item.mode) ? item.mode : "crest",
+    seed: typeof item.seed === "string" && item.seed.trim() ? item.seed : "seed",
+    savedAt: typeof item.savedAt === "string" ? item.savedAt : new Date().toISOString()
+  };
+}
+
+function loadGallery() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(galleryStorageKey));
+    gallery = Array.isArray(saved) ? saved.map(normalizeGalleryItem).filter(Boolean).slice(0, 18) : [];
+  } catch {
+    gallery = [];
+    localStorage.removeItem(galleryStorageKey);
+  }
+}
+
 function saveState() {
   localStorage.setItem(storageKey, JSON.stringify(state));
+}
+
+function saveGallery() {
+  localStorage.setItem(galleryStorageKey, JSON.stringify(gallery));
 }
 
 function createSnapshot() {
@@ -501,6 +548,142 @@ function loadDesign() {
   showToast("Loaded");
 }
 
+function nameForCurrentTile() {
+  return `${titleCase(state.mode)} ${state.seed}`;
+}
+
+function saveCurrentToGallery() {
+  const code = encodeDesign();
+  const existing = gallery.findIndex((item) => item.code === code);
+  const item = {
+    id: `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    name: nameForCurrentTile(),
+    code,
+    mode: state.mode,
+    seed: state.seed,
+    savedAt: new Date().toISOString()
+  };
+
+  if (existing >= 0) {
+    gallery.splice(existing, 1);
+  }
+
+  gallery.unshift(item);
+  gallery = gallery.slice(0, 18);
+  saveGallery();
+  renderGallery();
+  showToast("Saved");
+}
+
+function restoreGalleryItem(id) {
+  const item = gallery.find((entry) => entry.id === id);
+  if (!item) {
+    return;
+  }
+
+  let decoded;
+  try {
+    decoded = decodeDesign(item.code);
+  } catch {
+    showToast("Cannot load");
+    return;
+  }
+
+  pushHistory();
+  state.gridSize = decoded.gridSize;
+  state.cells = decoded.cells;
+  state.palette = decoded.palette;
+  state.activeColor = decoded.activeColor;
+  state.seed = decoded.seed;
+  state.mode = decoded.mode;
+  state.exportMode = decoded.exportMode;
+  state.tool = decoded.tool;
+  state.brush = decoded.brush;
+  state.symmetry = decoded.symmetry;
+  history[historyIndex] = createSnapshot();
+  saveState();
+  syncControls();
+  render();
+  showToast("Restored");
+}
+
+function deleteGalleryItem(id) {
+  gallery = gallery.filter((item) => item.id !== id);
+  saveGallery();
+  renderGallery();
+  showToast("Deleted");
+}
+
+function drawGalleryThumb(canvas, decoded) {
+  const size = 116;
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext("2d");
+  context.imageSmoothingEnabled = false;
+  drawTileData(context, size, size, decoded, false);
+}
+
+function renderGallery() {
+  galleryCount.textContent = gallery.length === 1 ? "1 saved tile" : `${gallery.length} saved tiles`;
+  galleryList.innerHTML = "";
+
+  if (!gallery.length) {
+    const empty = document.createElement("div");
+    empty.className = "gallery-empty";
+    empty.textContent = "Save a tile to keep it here.";
+    galleryList.append(empty);
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  gallery.forEach((item) => {
+    let decoded;
+    try {
+      decoded = decodeDesign(item.code);
+    } catch {
+      return;
+    }
+
+    const row = document.createElement("div");
+    row.className = "gallery-item";
+
+    const thumb = document.createElement("canvas");
+    thumb.className = "gallery-thumb";
+    thumb.setAttribute("aria-label", item.name);
+    drawGalleryThumb(thumb, decoded);
+
+    const meta = document.createElement("div");
+    meta.className = "gallery-meta";
+
+    const name = document.createElement("div");
+    name.className = "gallery-name";
+    name.textContent = item.name;
+
+    const actions = document.createElement("div");
+    actions.className = "gallery-actions";
+
+    [
+      ["Restore", "restore"],
+      ["Show", "show"],
+      ["Delete", "delete"]
+    ].forEach(([label, action]) => {
+      const button = document.createElement("button");
+      button.className = action === "delete" ? "button quiet" : "button";
+      button.type = "button";
+      button.textContent = label;
+      button.dataset.galleryAction = action;
+      button.dataset.galleryId = item.id;
+      actions.append(button);
+    });
+
+    meta.append(name, actions);
+    row.append(thumb, meta);
+    fragment.append(row);
+  });
+
+  galleryList.append(fragment);
+}
+
 function setActiveButton(container, selector, value) {
   document.querySelectorAll(`${container} .segment`).forEach((button) => {
     const isActive = button.matches(`[${selector}="${value}"]`);
@@ -556,17 +739,17 @@ function resizeCanvas(canvas, context) {
   return { width: rect.width, height: rect.height };
 }
 
-function drawTile(context, width, height, includeGrid = false) {
-  const cell = width / state.gridSize;
-  context.fillStyle = state.palette[1] || "#fbfcf8";
+function drawTileData(context, width, height, tile, includeGrid = false) {
+  const cell = width / tile.gridSize;
+  context.fillStyle = tile.palette[1] || "#fbfcf8";
   context.fillRect(0, 0, width, height);
 
-  state.cells.forEach((color, index) => {
+  tile.cells.forEach((color, index) => {
     if (!color) {
       return;
     }
-    const x = index % state.gridSize;
-    const y = Math.floor(index / state.gridSize);
+    const x = index % tile.gridSize;
+    const y = Math.floor(index / tile.gridSize);
     context.fillStyle = color;
     context.fillRect(Math.floor(x * cell), Math.floor(y * cell), Math.ceil(cell), Math.ceil(cell));
   });
@@ -577,7 +760,7 @@ function drawTile(context, width, height, includeGrid = false) {
 
   context.strokeStyle = "rgba(23, 26, 24, 0.12)";
   context.lineWidth = 1;
-  for (let line = 0; line <= state.gridSize; line += 1) {
+  for (let line = 0; line <= tile.gridSize; line += 1) {
     const position = Math.round(line * cell) + 0.5;
     context.beginPath();
     context.moveTo(position, 0);
@@ -586,6 +769,18 @@ function drawTile(context, width, height, includeGrid = false) {
     context.lineTo(width, position);
     context.stroke();
   }
+}
+
+function currentTileData() {
+  return {
+    gridSize: state.gridSize,
+    cells: state.cells,
+    palette: state.palette
+  };
+}
+
+function drawTile(context, width, height, includeGrid = false) {
+  drawTileData(context, width, height, currentTileData(), includeGrid);
 }
 
 function renderBoard() {
@@ -970,21 +1165,29 @@ function safeFilePart(value) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "pattern";
 }
 
-function createTileCanvas(pixelSize) {
+function createTileCanvasFromTile(tile, pixelSize) {
   const tileCanvas = document.createElement("canvas");
   tileCanvas.width = pixelSize;
   tileCanvas.height = pixelSize;
   const tileContext = tileCanvas.getContext("2d");
   tileContext.imageSmoothingEnabled = false;
-  drawTile(tileContext, pixelSize, pixelSize, false);
+  drawTileData(tileContext, pixelSize, pixelSize, tile, false);
   return tileCanvas;
 }
 
-function fillWithTile(context, width, height, tileSize) {
-  const tile = createTileCanvas(tileSize);
-  const pattern = context.createPattern(tile, "repeat");
+function createTileCanvas(pixelSize) {
+  return createTileCanvasFromTile(currentTileData(), pixelSize);
+}
+
+function fillWithTileData(context, width, height, tile, tileSize) {
+  const tileCanvas = createTileCanvasFromTile(tile, tileSize);
+  const pattern = context.createPattern(tileCanvas, "repeat");
   context.fillStyle = pattern;
   context.fillRect(0, 0, width, height);
+}
+
+function fillWithTile(context, width, height, tileSize) {
+  fillWithTileData(context, width, height, currentTileData(), tileSize);
 }
 
 function downloadCanvas(canvas, label) {
@@ -1025,6 +1228,39 @@ function exportPng() {
   fillWithTile(exportContext, exportCanvas.width, exportCanvas.height, 360);
   downloadCanvas(exportCanvas, "wallpaper");
   showToast("Wallpaper exported");
+}
+
+function renderShowcase(tile = showcaseTile || currentTileData()) {
+  if (!showcase.classList.contains("open")) {
+    return;
+  }
+
+  const rect = showcaseCanvas.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+  showcaseCanvas.width = Math.max(1, Math.round(rect.width * ratio));
+  showcaseCanvas.height = Math.max(1, Math.round(rect.height * ratio));
+  showcaseContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+  showcaseContext.imageSmoothingEnabled = false;
+  showcaseContext.fillStyle = tile.palette[1] || "#fbfcf8";
+  showcaseContext.fillRect(0, 0, rect.width, rect.height);
+  const tileSize = Math.max(180, Math.min(380, Math.round(Math.min(rect.width, rect.height) / 2.4)));
+  fillWithTileData(showcaseContext, rect.width, rect.height, tile, tileSize);
+}
+
+function openShowcase(tile = currentTileData(), title = nameForCurrentTile()) {
+  showcaseTile = tile;
+  showcaseTitle.textContent = title;
+  showcase.classList.add("open");
+  showcase.setAttribute("aria-hidden", "false");
+  document.body.classList.add("showcase-active");
+  renderShowcase(tile);
+}
+
+function closeShowcase() {
+  showcase.classList.remove("open");
+  showcase.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("showcase-active");
+  showcaseTile = null;
 }
 
 function bindSegmentedControls() {
@@ -1090,6 +1326,11 @@ function bindKeyboard() {
   window.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
 
+    if (event.key === "Escape" && showcase.classList.contains("open")) {
+      closeShowcase();
+      return;
+    }
+
     if ((event.metaKey || event.ctrlKey) && key === "z") {
       event.preventDefault();
       if (event.shiftKey) {
@@ -1105,6 +1346,9 @@ function bindKeyboard() {
     }
 
     if (["1", "2", "3", "4"].includes(event.key)) {
+      if (document.activeElement === seedInput || document.activeElement === designCode) {
+        return;
+      }
       state.brush = Number(event.key);
       saveState();
       syncControls();
@@ -1114,6 +1358,7 @@ function bindKeyboard() {
 
 function init() {
   loadState();
+  loadGallery();
   bindSegmentedControls();
   bindKeyboard();
 
@@ -1123,6 +1368,8 @@ function init() {
   boardCanvas.addEventListener("pointercancel", stopDrawing);
   undoButton.addEventListener("click", undo);
   redoButton.addEventListener("click", redo);
+  showcaseButton.addEventListener("click", () => openShowcase());
+  closeShowcaseButton.addEventListener("click", closeShowcase);
   exportButton.addEventListener("click", exportPng);
   randomButton.addEventListener("click", shuffleTile);
   paletteButton.addEventListener("click", rotatePalette);
@@ -1130,6 +1377,35 @@ function init() {
   generateButton.addEventListener("click", () => generatePattern());
   copyButton.addEventListener("click", copyDesign);
   loadButton.addEventListener("click", loadDesign);
+  saveGalleryButton.addEventListener("click", saveCurrentToGallery);
+  galleryList.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-gallery-action]");
+    if (!button) {
+      return;
+    }
+
+    if (button.dataset.galleryAction === "restore") {
+      restoreGalleryItem(button.dataset.galleryId);
+    }
+
+    if (button.dataset.galleryAction === "show") {
+      const item = gallery.find((entry) => entry.id === button.dataset.galleryId);
+      if (!item) {
+        return;
+      }
+
+      try {
+        const decoded = decodeDesign(item.code);
+        openShowcase(decoded, item.name);
+      } catch {
+        showToast("Cannot show");
+      }
+    }
+
+    if (button.dataset.galleryAction === "delete") {
+      deleteGalleryItem(button.dataset.galleryId);
+    }
+  });
   seedInput.addEventListener("change", () => {
     state.seed = seedInput.value.trim() || state.seed || createSeed();
     saveState();
@@ -1143,10 +1419,14 @@ function init() {
   });
   clearButton.addEventListener("click", clearTile);
   invertButton.addEventListener("click", invertMarks);
-  window.addEventListener("resize", render);
+  window.addEventListener("resize", () => {
+    render();
+    renderShowcase();
+  });
 
   pushHistory();
   syncControls();
+  renderGallery();
   render();
 }
 
