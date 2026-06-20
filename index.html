@@ -62,6 +62,7 @@
           <div class="statusbar">
             <span id="statusText">24 x 24 tile</span>
             <span id="colorText">Color #cf4e45</span>
+            <span id="exportText">Export Tile</span>
           </div>
         </section>
 
@@ -72,6 +73,25 @@
               <button class="button quiet small" id="randomButton" type="button">Shuffle</button>
             </div>
             <canvas id="previewCanvas" class="preview" width="320" height="320" aria-label="Repeating tile preview"></canvas>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Forge</h2>
+              <button class="button quiet small" id="seedButton" type="button">New Seed</button>
+            </div>
+            <label class="field">
+              <span>Seed</span>
+              <input id="seedInput" type="text" autocomplete="off" spellcheck="false">
+            </label>
+            <div class="segmented mode-grid" id="modeButtons">
+              <button class="segment active" type="button" data-mode="crest">Crest</button>
+              <button class="segment" type="button" data-mode="woven">Woven</button>
+              <button class="segment" type="button" data-mode="circuit">Circuit</button>
+              <button class="segment" type="button" data-mode="bloom">Bloom</button>
+              <button class="segment" type="button" data-mode="scatter">Scatter</button>
+            </div>
+            <button class="button" id="generateButton" type="button">Generate</button>
           </section>
 
           <section class="panel">
@@ -89,6 +109,27 @@
               <button class="segment" type="button" data-size="16">16</button>
               <button class="segment active" type="button" data-size="24">24</button>
               <button class="segment" type="button" data-size="32">32</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2>Export</h2>
+            <div class="segmented" id="exportButtons">
+              <button class="segment active" type="button" data-export="tile">Tile</button>
+              <button class="segment" type="button" data-export="sheet">Sheet</button>
+              <button class="segment" type="button" data-export="wallpaper">Wallpaper</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
+              <h2>Design Code</h2>
+              <button class="button quiet small" id="copyButton" type="button">Copy</button>
+            </div>
+            <textarea id="designCode" class="code-field" rows="3" spellcheck="false"></textarea>
+            <div class="command-panel">
+              <button class="button" id="loadButton" type="button">Load Code</button>
+              <span class="toast" id="toast" role="status" aria-live="polite">Ready</span>
             </div>
           </section>
 
