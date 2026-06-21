@@ -78,6 +78,15 @@
 
           <section class="panel">
             <div class="panel-title">
+              <h2>Variations</h2>
+              <button class="button quiet small" id="captureVariationButton" type="button">Capture</button>
+            </div>
+            <div class="variation-count" id="variationCount">No variations yet</div>
+            <div class="variation-list" id="variationList" aria-label="Working variations"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">
               <h2>Forge</h2>
               <button class="button quiet small" id="seedButton" type="button">New Seed</button>
             </div>
@@ -114,11 +123,28 @@
           </section>
 
           <section class="panel">
+            <h2>Transform</h2>
+            <div class="transform-grid" id="transformButtons">
+              <button class="button quiet small" type="button" data-transform="flip-horizontal">Flip H</button>
+              <button class="button quiet small" type="button" data-transform="flip-vertical">Flip V</button>
+              <button class="button quiet small" type="button" data-transform="rotate-right">Rotate</button>
+              <button class="button quiet small" type="button" data-transform="center">Center</button>
+            </div>
+            <div class="nudge-grid" id="nudgeButtons">
+              <button class="button quiet small" type="button" data-nudge="-1,0">Left</button>
+              <button class="button quiet small" type="button" data-nudge="0,-1">Up</button>
+              <button class="button quiet small" type="button" data-nudge="0,1">Down</button>
+              <button class="button quiet small" type="button" data-nudge="1,0">Right</button>
+            </div>
+          </section>
+
+          <section class="panel">
             <h2>Export</h2>
-            <div class="segmented" id="exportButtons">
+            <div class="segmented export-grid" id="exportButtons">
               <button class="segment active" type="button" data-export="tile">Tile</button>
               <button class="segment" type="button" data-export="sheet">Sheet</button>
               <button class="segment" type="button" data-export="wallpaper">Wallpaper</button>
+              <button class="segment" type="button" data-export="poster">Poster</button>
             </div>
           </section>
 
@@ -158,7 +184,12 @@
           <p class="eyebrow">Showcase</p>
           <h2 id="showcaseTitle">Glyph Forge</h2>
         </div>
-        <button class="button" id="closeShowcaseButton" type="button">Close</button>
+        <div class="showcase-controls">
+          <button class="button quiet" id="previousShowcaseButton" type="button">Previous</button>
+          <span class="showcase-count" id="showcaseCount">1 / 1</span>
+          <button class="button quiet" id="nextShowcaseButton" type="button">Next</button>
+          <button class="button" id="closeShowcaseButton" type="button">Close</button>
+        </div>
       </div>
     </section>
 

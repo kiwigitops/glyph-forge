@@ -51,6 +51,7 @@ button {
 .app-shell {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
+  height: 100vh;
   min-height: 100vh;
 }
 
@@ -102,6 +103,7 @@ h2 {
   display: grid;
   grid-template-columns: 164px minmax(340px, 1fr) 326px;
   min-height: 0;
+  overflow: hidden;
 }
 
 .toolrail,
@@ -111,6 +113,7 @@ h2 {
   gap: 14px;
   min-width: 0;
   padding: 18px;
+  overflow: auto;
   background: rgba(255, 255, 255, 0.58);
 }
 
@@ -120,7 +123,6 @@ h2 {
 
 .inspector {
   border-left: 1px solid var(--line);
-  overflow: auto;
 }
 
 .stage {
@@ -269,6 +271,11 @@ h2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.export-grid {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .segment {
   min-width: 0;
   padding: 0 8px;
@@ -354,6 +361,27 @@ h2 {
   border-color: var(--ink);
 }
 
+.transform-grid,
+.nudge-grid {
+  display: grid;
+  gap: 6px;
+}
+
+.transform-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.nudge-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.transform-grid .button,
+.nudge-grid .button {
+  min-width: 0;
+  padding: 0 8px;
+  font-size: 0.76rem;
+}
+
 .command-panel {
   align-items: center;
   grid-template-columns: 1fr 1fr;
@@ -380,10 +408,18 @@ h2 {
   background: rgba(15, 118, 110, 0.1);
 }
 
-.gallery-count {
+.gallery-count,
+.variation-count {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 800;
+}
+
+.variation-list {
+  display: flex;
+  gap: 10px;
+  overflow: auto;
+  padding-bottom: 2px;
 }
 
 .gallery-list {
@@ -394,11 +430,16 @@ h2 {
   padding-right: 2px;
 }
 
-.gallery-empty {
+.gallery-empty,
+.variation-empty {
   min-height: 42px;
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 750;
+}
+
+.variation-empty {
+  min-width: 100%;
 }
 
 .gallery-item {
@@ -410,7 +451,18 @@ h2 {
   border-top: 1px solid var(--line);
 }
 
-.gallery-thumb {
+.variation-item {
+  display: grid;
+  flex: 0 0 118px;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(251, 252, 248, 0.7);
+}
+
+.gallery-thumb,
+.variation-thumb {
   width: 58px;
   height: 58px;
   border: 1px solid var(--line-strong);
@@ -419,13 +471,20 @@ h2 {
   image-rendering: pixelated;
 }
 
+.variation-thumb {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
 .gallery-meta {
   display: grid;
   gap: 7px;
   min-width: 0;
 }
 
-.gallery-name {
+.gallery-name,
+.variation-name {
   overflow: hidden;
   font-size: 0.82rem;
   font-weight: 850;
@@ -433,13 +492,22 @@ h2 {
   white-space: nowrap;
 }
 
-.gallery-actions {
+.gallery-actions,
+.variation-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 }
 
-.gallery-actions .button {
+.gallery-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.variation-actions {
+  grid-template-columns: 1fr;
+}
+
+.gallery-actions .button,
+.variation-actions .button {
   min-height: 30px;
   padding: 0 7px;
   font-size: 0.72rem;
@@ -492,6 +560,29 @@ h2 {
   font-size: clamp(1rem, 1.6vw, 1.35rem);
 }
 
+.showcase-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.showcase-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  min-width: 62px;
+  padding: 0 10px;
+  border: 1px solid rgba(251, 252, 248, 0.24);
+  border-radius: 8px;
+  color: #fbfcf8;
+  background: rgba(251, 252, 248, 0.08);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
 @media (max-width: 1060px) {
   .workbench {
     grid-template-columns: 138px minmax(320px, 1fr) 288px;
@@ -504,6 +595,10 @@ h2 {
 }
 
 @media (max-width: 860px) {
+  .app-shell {
+    height: auto;
+  }
+
   .topbar {
     align-items: flex-start;
     flex-direction: column;
@@ -518,6 +613,7 @@ h2 {
   .workbench {
     display: flex;
     flex-direction: column;
+    overflow: visible;
   }
 
   .toolrail,
@@ -569,6 +665,10 @@ h2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .export-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .stage {
     padding: 14px;
   }
@@ -589,5 +689,18 @@ h2 {
   .showcase-bar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .showcase-controls {
+    justify-content: stretch;
+    width: 100%;
+  }
+
+  .showcase-controls .button {
+    flex: 1 1 100px;
+  }
+
+  .showcase-count {
+    flex: 0 0 auto;
   }
 }
