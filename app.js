@@ -1756,6 +1756,10 @@ function bindKeyboard() {
       return;
     }
 
+    if (document.activeElement === seedInput || document.activeElement === designCode) {
+      return;
+    }
+
     if ((event.metaKey || event.ctrlKey) && key === "z") {
       event.preventDefault();
       if (event.shiftKey) {
@@ -1771,9 +1775,6 @@ function bindKeyboard() {
     }
 
     if (["1", "2", "3", "4"].includes(event.key)) {
-      if (document.activeElement === seedInput || document.activeElement === designCode) {
-        return;
-      }
       state.brush = Number(event.key);
       saveState();
       syncControls();
