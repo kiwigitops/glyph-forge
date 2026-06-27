@@ -184,16 +184,24 @@ function loadVariations() {
   }
 }
 
+function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    return;
+  }
+}
+
 function saveState() {
-  localStorage.setItem(storageKey, JSON.stringify(state));
+  writeStorage(storageKey, JSON.stringify(state));
 }
 
 function saveGallery() {
-  localStorage.setItem(galleryStorageKey, JSON.stringify(gallery));
+  writeStorage(galleryStorageKey, JSON.stringify(gallery));
 }
 
 function saveVariations() {
-  localStorage.setItem(variationsStorageKey, JSON.stringify(variations));
+  writeStorage(variationsStorageKey, JSON.stringify(variations));
 }
 
 function createSnapshot() {
